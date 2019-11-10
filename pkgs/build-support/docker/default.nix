@@ -395,7 +395,7 @@ rec {
     ''
       mkdir layer
       if [[ -n "$contents" ]]; then
-        echo "Adding contents:"
+        echo "Adding contents to image:"
         echo "$contents"
         for item in $contents; do
           echo "Adding $item"
@@ -467,10 +467,11 @@ rec {
       inherit fromImage fromImageName fromImageTag diskSize;
 
       preMount = lib.optionalString (contents != null && contents != []) ''
-        echo "Adding contents..."
+        echo "Adding contents to image root layer:"
+        echo "${toString contents}"
         for item in ${toString contents}; do
           echo "Adding $item..."
-          rsync -a${if keepContentsDirlinks then "K" else "k"} --chown=0:0 $item/ layer/
+          rsync -a${if keepContentsDirlinks then "K" else "k"}R --chown=0:0 "$item" layer/
         done
 
         chmod ug+w layer
