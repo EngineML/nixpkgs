@@ -395,10 +395,11 @@ rec {
     ''
       mkdir layer
       if [[ -n "$contents" ]]; then
-        echo "Adding contents..."
+        echo "Adding contents:"
+        echo "$contents"
         for item in $contents; do
           echo "Adding $item"
-          rsync -a${if keepContentsDirlinks then "K" else "k"} --chown=0:0 $item/ layer/
+          rsync -a${if keepContentsDirlinks then "K" else "k"}R --chown=0:0 "$item" layer/
         done
       else
         echo "No contents to add to layer."
