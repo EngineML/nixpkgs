@@ -49,6 +49,12 @@ in
         type = types.str;
       };
 
+      extraGroups = mkOption {
+        default = [];
+        description = "Additional groups of which the buildkite-agent user will be made a member.";
+        type = types.listOf types.str;
+      };
+
       runtimePackages = mkOption {
         default = [ pkgs.bash pkgs.nix ];
         defaultText = "[ pkgs.bash pkgs.nix ]";
@@ -74,13 +80,13 @@ in
         '';
       };
 
-      meta-data = mkOption {
+      tags = mkOption {
         type = types.str;
         default = "";
         example = "queue=default,docker=true,ruby2=true";
         description = ''
-          Meta data for the agent. This is a comma-separated list of
-          <code>key=value</code> pairs.
+          Tags (formerly 'meta-data') for the agent. This is a
+          comma-separated list of <code>key=value</code> pairs.
         '';
       };
 
@@ -190,7 +196,7 @@ in
         home = cfg.dataDir;
         createHome = true;
         description = "Buildkite agent user";
-        extraGroups = [ "keys" ];
+        extraGroups = cfg.extraGroups ++ [ "keys" ];
       };
 
     environment.systemPackages = [ cfg.package ];
@@ -211,6 +217,7 @@ in
           sshDir = "${cfg.dataDir}/.ssh";
         in
           ''
+            set -x
             mkdir -m 0700 -p "${sshDir}"
             cp -f "${toString cfg.openssh.privateKeyPath}" "${sshDir}/id_rsa"
             cp -f "${toString cfg.openssh.publicKeyPath}"  "${sshDir}/id_rsa.pub"
@@ -219,7 +226,7 @@ in
             cat > "${cfg.dataDir}/buildkite-agent.cfg" <<EOF
             token="$(cat ${toString cfg.tokenPath})"
             name="${cfg.name}"
-            meta-data="${cfg.meta-data}"
+            tags="${cfg.tags}"
             build-path="${cfg.dataDir}/builds"
             hooks-path="${cfg.hooksPath}"
             ${cfg.extraConfig}
@@ -227,7 +234,7 @@ in
           '';
 
         serviceConfig =
-          { ExecStart = "${pkgs.buildkite-agent}/bin/buildkite-agent start --config /var/lib/buildkite-agent/buildkite-agent.cfg";
+          { ExecStart = "${cfg.package}/bin/buildkite-agent start --config /var/lib/buildkite-agent/buildkite-agent.cfg";
             User = "buildkite-agent";
             RestartSec = 5;
             Restart = "on-failure";
