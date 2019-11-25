@@ -5,7 +5,7 @@ callPackage ./generic.nix (args // rec {
     owner = "buildkite";
     repo = "agent";
     rev = "v${version}";
-    sha256 = "0hxygsz945d2y88akc115i227dd6vid250anncvgyngfnibchwd0";
+    sha256 = "1haz68ylw3f6gfafwy31r5gr6qbc8wcx8nc3gbv7shpv8wvqlzjp";
   };
   version = "3.16.0";
   hasBootstrapScript = false;
